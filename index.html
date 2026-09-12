@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="theme-color" content="#111827"/>
+<link rel="manifest" href="manifest.webmanifest"/>
+<link rel="apple-touch-icon" href="icon-192.png"/>
+
+<title>מצליחנית 3.0</title>
+<style>
+:root{--bg:#f7f7f9;--card:#fff;--text:#171717;--muted:#6b7280;--dark:#111827;--line:#e5e7eb;--soft:#eef1f5;--radius:20px}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
+.app{max-width:900px;margin:auto;padding:18px 14px 110px}
+header{display:flex;justify-content:space-between;align-items:center;margin:6px 0 18px}
+h1,h2,h3,p{margin:0}.title h1{font-size:30px}.title p{color:var(--muted);margin-top:5px}
+.badge{background:var(--dark);color:#fff;border-radius:999px;padding:8px 12px;font-size:12px}
+.card{background:var(--card);border-radius:var(--radius);padding:18px;margin-bottom:14px;box-shadow:0 5px 18px rgba(0,0,0,.05)}
+.hero{background:linear-gradient(135deg,#fff,#edf0f4)} .hero p{color:var(--muted);margin-top:7px;line-height:1.5}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.mini{background:#fff;border-radius:18px;padding:15px;box-shadow:0 4px 14px rgba(0,0,0,.04)}
+.mini small{color:var(--muted)} .mini strong{display:block;font-size:20px;margin-top:7px}
+.section-title{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+button{border:0;background:var(--dark);color:#fff;border-radius:12px;padding:9px 12px;cursor:pointer}
+.secondary{background:#eceff3;color:#111827}
+input,select,textarea{width:100%;padding:11px 12px;border:1px solid #d7dbe2;border-radius:12px;background:#fff;font-size:15px}
+textarea{min-height:72px;resize:vertical}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.full{grid-column:1/-1}.hidden{display:none}
+.progress{height:10px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin-top:14px}.progress span{display:block;height:100%;background:#111827;width:0}
+.task,.event,.deadline{display:flex;gap:10px;align-items:flex-start;padding:12px 0;border-bottom:1px solid #eee}.task:last-child,.event:last-child,.deadline:last-child{border-bottom:0}
+.task input{width:20px;height:20px;margin-top:3px}.task.done .txt{text-decoration:line-through;color:#9ca3af}
+.meta{font-size:13px;color:var(--muted);margin-top:4px}.pill{display:inline-block;background:#eef2f7;border-radius:999px;padding:4px 8px;font-size:12px;margin-inline-start:5px}
+.success{background:#111827;color:#fff}.success p{color:#d1d5db;margin:8px 0 12px}.success li{margin:8px 0}
+.nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:flex;justify-content:center}
+.nav-inner{max-width:900px;width:100%;display:grid;grid-template-columns:repeat(7,1fr);padding:8px}.nav button{background:transparent;color:#6b7280;font-size:11px;padding:9px 3px}.nav button.active{color:#111827;font-weight:700}
+.calendar-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.controls{display:flex;gap:7px}
+.weekdays,.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}.weekdays div{text-align:center;font-size:12px;color:var(--muted);padding:5px}
+.day{min-height:72px;border:1px solid #eceff3;border-radius:12px;padding:7px;background:#fff;cursor:pointer}.day.other{opacity:.35}.day.today{border:2px solid #111827}.day.selected{background:#eef1f5}
+.day-num{font-weight:700;font-size:13px}.dot{width:6px;height:6px;border-radius:50%;background:#111827;display:inline-block;margin:3px 2px 0}
+.week-grid{display:grid;grid-template-columns:74px repeat(7,1fr);gap:4px;overflow-x:auto}
+.week-grid .head{font-size:12px;font-weight:700;text-align:center;padding:8px;background:#f3f4f6;border-radius:9px}
+.timecell{font-size:12px;font-weight:700;padding:8px}.slot{min-height:45px;border:1px solid #edf0f2;border-radius:9px;padding:5px;background:#fff}.chip{background:#f1f3f6;border-radius:8px;padding:6px;font-size:11px;margin-bottom:4px}
+.goal{padding:12px;border-radius:14px;background:#f7f7f8;margin-top:10px}.goal b{display:block;margin-bottom:5px}.goal small{color:var(--muted)}
+.alert{background:#fff4db;border-radius:14px;padding:12px;margin-bottom:10px}.alert b{display:block;margin-bottom:4px}
+@media(max-width:620px){.nav-inner{grid-template-columns:repeat(4,1fr)}.form-grid{grid-template-columns:1fr}.full{grid-column:auto}.day{min-height:56px;padding:5px}.week-grid{grid-template-columns:60px repeat(7,105px)}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+<div class="title"><h1>מצליחנית</h1><p id="todayText"></p></div>
+<div class="badge">גרסה 3.0</div>
+</header>
+
+<main id="todayView">
+<section class="card hero"><h2>היום שלך</h2><p>המשימות החשובות, הלו״ז והיעדים שלך במקום אחד.</p><div class="progress"><span id="dayProgress"></span></div><p style="margin-top:8px"><b id="progressLabel">0%</b> הושלמו</p></section>
+<section class="card success"><h3>מצב מצליחנית ✨</h3><p>3 דברים שהופכים את היום למוצלח:</p><ol><li>פעולה אחת שמקדמת הכנסה</li><li>בלוק לימודים ממוקד</li><li>תנועה או אימון</li></ol></section>
+<section id="alertsBox"></section>
+<section class="card"><div class="section-title"><h3>משימות היום</h3><button onclick="toggle('taskForm')">+ משימה</button></div>
+<div id="taskForm" class="hidden"><div class="form-grid">
+<input id="taskText" class="full" placeholder="משימה"/>
+<select id="taskCat"><option value="business">עסק</option><option value="study">לימודים</option><option value="home">בית</option><option value="health">בריאות</option><option value="personal">אישי</option></select>
+<input id="taskDate" type="date"/>
+<button class="full" onclick="addTask()">שמירה</button></div></div>
+<div id="tasks"></div></section>
+</main>
+
+<main id="calendarView" class="hidden">
+<section class="card">
+<div class="calendar-head"><div><h3>יומן חודשי</h3><div id="monthTitle" class="meta"></div></div><div class="controls"><button class="secondary" onclick="moveMonth(-1)">◀</button><button class="secondary" onclick="goToday()">היום</button><button class="secondary" onclick="moveMonth(1)">▶</button></div></div>
+<div class="weekdays"><div>א׳</div><div>ב׳</div><div>ג׳</div><div>ד׳</div><div>ה׳</div><div>ו׳</div><div>ש׳</div></div><div id="calendarGrid" class="calendar-grid"></div>
+</section>
+<section class="card">
+<div class="section-title"><h3 id="selectedTitle">אירועים</h3><button onclick="toggle('eventForm')">+ אירוע</button></div>
+<div id="eventForm" class="hidden"><div class="form-grid">
+<input id="eventTitle" class="full" placeholder="שם אירוע / פגישה"/>
+<input id="eventDate" type="date"/><input id="eventTime" type="time"/>
+<input id="eventEnd" type="time"/>
+<select id="eventCat"><option value="business">עסק</option><option value="study">לימודים</option><option value="home">בית</option><option value="health">בריאות</option><option value="personal">אישי</option></select>
+<select id="eventRepeat"><option value="none">ללא חזרה</option><option value="weekly">כל שבוע</option><option value="daily">כל יום</option></select>
+<textarea id="eventNotes" class="full" placeholder="הערות"></textarea><button class="full" onclick="addEvent()">שמירה</button>
+</div></div><div id="dayEvents"></div></section>
+</main>
+
+<main id="weekView" class="hidden">
+<section class="card">
+<div class="section-title"><div><h3>מערכת שבועית קבועה</h3><div class="meta">אירועים חוזרים מופיעים כאן אוטומטית</div></div><button onclick="toggle('weeklyForm')">+ קבוע</button></div>
+<div id="weeklyForm" class="hidden"><div class="form-grid">
+<input id="weeklyTitle" class="full" placeholder="למשל: שיעור / ישיבת צוות / אימון"/>
+<select id="weeklyDay"><option value="0">ראשון</option><option value="1">שני</option><option value="2">שלישי</option><option value="3">רביעי</option><option value="4">חמישי</option><option value="5">שישי</option><option value="6">שבת</option></select>
+<input id="weeklyTime" type="time"/><input id="weeklyEnd" type="time"/>
+<select id="weeklyCat"><option value="business">עסק</option><option value="study">לימודים</option><option value="home">בית</option><option value="health">בריאות</option><option value="personal">אישי</option></select>
+<button class="full" onclick="addWeekly()">שמירה</button></div></div>
+<div id="weekGrid" class="week-grid"></div>
+</section>
+</main>
+
+<main id="deadlinesView" class="hidden">
+<section class="card">
+<div class="section-title"><div><h3>מבחנים ומועדי הגשה</h3><div class="meta">הדברים שאסור לפספס</div></div><button onclick="toggle('deadlineForm')">+ מועד</button></div>
+<div id="deadlineForm" class="hidden"><div class="form-grid">
+<input id="deadlineTitle" class="full" placeholder="מבחן / עבודה / מסמך להגשה"/>
+<select id="deadlineType"><option value="exam">מבחן</option><option value="assignment">עבודה</option><option value="business">עסק</option><option value="personal">אישי</option></select>
+<input id="deadlineDate" type="date"/>
+<textarea id="deadlineNotes" class="full" placeholder="הערות"></textarea>
+<button class="full" onclick="addDeadline()">שמירה</button>
+</div></div><div id="deadlines"></div></section>
+</main>
+
+<main id="businessView" class="hidden">
+<section class="card">
+<div class="section-title"><div><h3>נדל״ן</h3><div class="meta">לקוחות, פולואפים ונכסים</div></div><button onclick="toggle('leadForm')">+ לקוח</button></div>
+<div id="leadForm" class="hidden"><div class="form-grid">
+<input id="leadName" placeholder="שם לקוח"/><input id="leadPhone" placeholder="טלפון"/>
+<select id="leadType"><option value="buyer">קונה</option><option value="seller">מוכר</option><option value="investor">משקיע</option></select>
+<input id="leadNext" type="date"/>
+<textarea id="leadNotes" class="full" placeholder="מה השלב הבא?"></textarea>
+<button class="full" onclick="addLead()">שמירה</button></div></div>
+<div id="leads"></div></section>
+</main>
+
+<main id="goalsView" class="hidden">
+<section class="card"><h3>היעדים שלי</h3>
+<div class="goal"><b>קריירה</b><small>להצליח במשפטים ולבנות עסק נדל״ן חזק.</small></div>
+<div class="goal"><b>בריאות</b><small>שגרה של תזונה טובה ותנועה.</small></div>
+<div class="goal"><b>כלכלה</b><small>יציבות, חיסכון והתקדמות לדירה משלי.</small></div>
+<div class="goal"><b>חיים</b><small>משפחה, עצמי וחוויות.</small></div>
+</section></main>
+
+<main id="wellnessView" class="hidden">
+<section class="card"><h3>תזונה וספורט</h3><div class="grid" style="margin-top:12px">
+<div class="mini"><small>כוסות מים</small><strong id="water">0</strong><button style="margin-top:8px" onclick="inc('water')">+1</button></div>
+<div class="mini"><small>דקות תנועה</small><strong id="sport">0</strong><input id="sportInput" type="number" min="0" placeholder="דקות" style="margin-top:8px"><button style="margin-top:8px" onclick="saveSport()">שמירה</button></div>
+</div></section></main>
+</div>
+
+<nav class="nav"><div class="nav-inner">
+<button class="active" onclick="view('todayView',this)">היום</button>
+<button onclick="view('calendarView',this)">יומן</button>
+<button onclick="view('weekView',this)">שבועי</button>
+<button onclick="view('deadlinesView',this)">מועדים</button>
+<button onclick="view('businessView',this)">נדל״ן</button>
+<button onclick="view('goalsView',this)">יעדים</button>
+<button onclick="view('wellnessView',this)">בריאות</button>
+</div></nav>
+
+<script>
+const pad=n=>String(n).padStart(2,'0'), iso=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const today=new Date(), todayISO=iso(today), names={business:'עסק',study:'לימודים',home:'בית',health:'בריאות',personal:'אישי'};
+let tasks=JSON.parse(localStorage.getItem('m3_tasks')||'[]');
+let events=JSON.parse(localStorage.getItem('m3_events')||'[]');
+let weekly=JSON.parse(localStorage.getItem('m3_weekly')||'[]');
+let deadlines=JSON.parse(localStorage.getItem('m3_deadlines')||'[]');
+let leads=JSON.parse(localStorage.getItem('m3_leads')||'[]');
+let stats=JSON.parse(localStorage.getItem('m3_stats')||'{"water":0,"sport":0}');
+if(!tasks.length) tasks=[
+{id:1,text:'5 שיחות פולואפ',cat:'business',date:todayISO,done:false},
+{id:2,text:'45 דקות לימודים',cat:'study',date:todayISO,done:false},
+{id:3,text:'30 דקות תנועה',cat:'health',date:todayISO,done:false}
+];
+let selected=todayISO, month=new Date(today.getFullYear(),today.getMonth(),1);
+document.getElementById('todayText').innerText=today.toLocaleDateString('he-IL',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+['taskDate','eventDate','deadlineDate','leadNext'].forEach(id=>document.getElementById(id).value=todayISO);
+
+function save(){localStorage.setItem('m3_tasks',JSON.stringify(tasks));localStorage.setItem('m3_events',JSON.stringify(events));localStorage.setItem('m3_weekly',JSON.stringify(weekly));localStorage.setItem('m3_deadlines',JSON.stringify(deadlines));localStorage.setItem('m3_leads',JSON.stringify(leads));localStorage.setItem('m3_stats',JSON.stringify(stats))}
+function toggle(id){document.getElementById(id).classList.toggle('hidden')}
+function view(id,b){document.querySelectorAll('main').forEach(x=>x.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');renderAll()}
+function addTask(){let text=taskText.value.trim();if(!text)return;tasks.push({id:Date.now(),text,cat:taskCat.value,date:taskDate.value||todayISO,done:false});taskText.value='';save();renderAll()}
+function toggleTask(id){tasks=tasks.map(x=>x.id===id?{...x,done:!x.done}:x);save();renderAll()}
+function addEvent(){let t=eventTitle.value.trim();if(!t)return;events.push({id:Date.now(),title:t,date:eventDate.value,time:eventTime.value,end:eventEnd.value,cat:eventCat.value,repeat:eventRepeat.value,notes:eventNotes.value});eventTitle.value='';eventNotes.value='';selected=eventDate.value;save();renderAll()}
+function addWeekly(){let t=weeklyTitle.value.trim();if(!t)return;weekly.push({id:Date.now(),title:t,day:+weeklyDay.value,time:weeklyTime.value,end:weeklyEnd.value,cat:weeklyCat.value});weeklyTitle.value='';save();renderAll()}
+function addDeadline(){let t=deadlineTitle.value.trim();if(!t)return;deadlines.push({id:Date.now(),title:t,type:deadlineType.value,date:deadlineDate.value,notes:deadlineNotes.value});deadlineTitle.value='';deadlineNotes.value='';save();renderAll()}
+function addLead(){let n=leadName.value.trim();if(!n)return;leads.push({id:Date.now(),name:n,phone:leadPhone.value,type:leadType.value,next:leadNext.value,notes:leadNotes.value});leadName.value='';leadPhone.value='';leadNotes.value='';save();renderAll()}
+function del(arrName,id){if(arrName==='event')events=events.filter(x=>x.id!==id);if(arrName==='deadline')deadlines=deadlines.filter(x=>x.id!==id);if(arrName==='lead')leads=leads.filter(x=>x.id!==id);save();renderAll()}
+function inc(k){stats[k]++;save();renderStats()} function saveSport(){stats.sport=+sportInput.value||0;save();renderStats()}
+function renderStats(){water.innerText=stats.water;sport.innerText=stats.sport}
+function occurrencesFor(date){
+ const d=new Date(date+'T12:00:00');
+ let list=events.filter(e=>e.date===date);
+ events.forEach(e=>{
+  if(e.repeat==='daily' && e.date<date) list.push({...e,id:'r'+e.id});
+  if(e.repeat==='weekly' && e.date<=date && new Date(e.date+'T12:00:00').getDay()===d.getDay()) list.push({...e,id:'r'+e.id});
+ });
+ weekly.filter(w=>w.day===d.getDay()).forEach(w=>list.push({id:'w'+w.id,title:w.title,date,time:w.time,end:w.end,cat:w.cat,repeat:'weekly',notes:''}));
+ return list;
+}
+function renderTasks(){
+ let list=tasks.filter(x=>x.date===todayISO), box=document.getElementById('tasks');box.innerHTML='';
+ list.forEach(t=>{let r=document.createElement('div');r.className='task'+(t.done?' done':'');r.innerHTML=`<input type=checkbox ${t.done?'checked':''} onchange="toggleTask(${t.id})"><div><div class=txt>${t.text}<span class=pill>${names[t.cat]}</span></div><div class=meta>${t.done?'הושלם':'להיום'}</div></div>`;box.appendChild(r)});
+ let done=list.filter(x=>x.done).length,p=list.length?Math.round(done/list.length*100):0;dayProgress.style.width=p+'%';progressLabel.innerText=p+'%';
+}
+function renderAlerts(){
+ let box=alertsBox;box.innerHTML='';let soon=deadlines.filter(d=>{let days=(new Date(d.date+'T12:00:00')-today)/86400000;return days>=0&&days<=7}).sort((a,b)=>a.date.localeCompare(b.date));
+ soon.forEach(d=>{let div=document.createElement('div');div.className='alert';div.innerHTML=`<b>קרוב: ${d.title}</b><span class=meta>${new Date(d.date+'T12:00:00').toLocaleDateString('he-IL')}</span>`;box.appendChild(div)});
+}
+function renderCalendar(){
+ monthTitle.innerText=month.toLocaleDateString('he-IL',{month:'long',year:'numeric'});calendarGrid.innerHTML='';
+ let y=month.getFullYear(),m=month.getMonth(),first=new Date(y,m,1),start=new Date(y,m,1-first.getDay());
+ for(let i=0;i<42;i++){let d=new Date(start);d.setDate(start.getDate()+i);let s=iso(d),el=document.createElement('div'),count=occurrencesFor(s).length+tasks.filter(t=>t.date===s).length+deadlines.filter(x=>x.date===s).length;
+ el.className='day'+(d.getMonth()!==m?' other':'')+(s===todayISO?' today':'')+(s===selected?' selected':'');el.innerHTML=`<div class=day-num>${d.getDate()}</div><div>${Array.from({length:Math.min(count,4)},()=>'<span class=dot></span>').join('')}</div>`;el.onclick=()=>{selected=s;eventDate.value=s;renderCalendar();renderDayEvents()};calendarGrid.appendChild(el)}
+}
+function renderDayEvents(){
+ let d=new Date(selected+'T12:00:00');selectedTitle.innerText='אירועים ל־'+d.toLocaleDateString('he-IL',{weekday:'long',day:'numeric',month:'long'});dayEvents.innerHTML='';
+ let list=occurrencesFor(selected).sort((a,b)=>(a.time||'99').localeCompare(b.time||'99'));
+ list.forEach(e=>{let r=document.createElement('div');r.className='event';let delBtn=String(e.id).startsWith('r')||String(e.id).startsWith('w')?'':`<button class=secondary onclick="del('event',${e.id})">מחיקה</button>`;r.innerHTML=`<div><b>${e.time||'—'}</b></div><div style="flex:1"><b>${e.title}</b><div class=meta>${names[e.cat]||''}${e.end?' • עד '+e.end:''}${e.repeat&&e.repeat!=='none'?' • חוזר':''}</div></div>${delBtn}`;dayEvents.appendChild(r)})
+}
+function renderWeek(){
+ weekGrid.innerHTML='';let days=['א׳','ב׳','ג׳','ד׳','ה׳','ו׳','ש׳'];weekGrid.innerHTML='<div></div>'+days.map(x=>`<div class=head>${x}</div>`).join('');
+ for(let h=7;h<=22;h++){weekGrid.innerHTML+=`<div class=timecell>${pad(h)}:00</div>`;for(let d=0;d<7;d++){let hits=weekly.filter(w=>w.day===d&&w.time&&+w.time.split(':')[0]===h);weekGrid.innerHTML+=`<div class=slot>${hits.map(w=>`<div class=chip><b>${w.title}</b><div>${w.time}${w.end?'–'+w.end:''}</div></div>`).join('')}</div>`}}
+}
+function renderDeadlines(){deadlines.sort((a,b)=>a.date.localeCompare(b.date));document.getElementById('deadlines').innerHTML=deadlines.map(d=>`<div class=deadline><div style="flex:1"><b>${d.title}</b><div class=meta>${new Date(d.date+'T12:00:00').toLocaleDateString('he-IL')} • ${d.type==='exam'?'מבחן':d.type==='assignment'?'עבודה':d.type==='business'?'עסק':'אישי'}${d.notes?' • '+d.notes:''}</div></div><button class=secondary onclick="del('deadline',${d.id})">מחיקה</button></div>`).join('')}
+function renderLeads(){document.getElementById('leads').innerHTML=leads.map(l=>`<div class=event><div style="flex:1"><b>${l.name}</b><div class=meta>${l.type==='buyer'?'קונה':l.type==='seller'?'מוכר':'משקיע'}${l.phone?' • '+l.phone:''}${l.next?' • פולואפ '+new Date(l.next+'T12:00:00').toLocaleDateString('he-IL'):''}${l.notes?' • '+l.notes:''}</div></div><button class=secondary onclick="del('lead',${l.id})">מחיקה</button></div>`).join('')}
+function moveMonth(n){month=new Date(month.getFullYear(),month.getMonth()+n,1);renderCalendar()} function goToday(){month=new Date(today.getFullYear(),today.getMonth(),1);selected=todayISO;renderCalendar();renderDayEvents()}
+function renderAll(){renderTasks();renderAlerts();renderCalendar();renderDayEvents();renderWeek();renderDeadlines();renderLeads();renderStats()}
+renderAll();
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>
